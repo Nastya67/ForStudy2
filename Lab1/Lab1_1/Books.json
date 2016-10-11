@@ -1,0 +1,72 @@
+[
+	{
+		"name" : "451 degrees Fahrenheit", 
+		"author" : "Rey Bredbery",
+		"size" : 500,
+		"edition" : 14000,
+		"date" : "1953-11-21"
+	},
+	{
+		"name" : "Flowers for Algernon",
+		"author" : "Daniel Keyes",
+		"size" : 600,
+		"edition" : 5000,
+		"date" : "1959-04-01"
+	},
+	{
+		"name" : "A vague smile",
+		"author" : "Francoise Sagan",
+		"size" : 128,
+		"edition" : 1600,
+		"date" : "1959-06-03"
+	},
+	{
+		"name" : "On the Beach",
+		"author" : "Ian McEwan",
+		"size" : 166,
+		"edition" : 4986,
+		"date" : "1962-06-07"
+	},
+	{
+		"name" : "Neverwhere",
+		"author" : "Neil Gaiman",
+		"size" : 370,
+		"edition" : 13400,
+		"date" : "1996-09-16"
+	},
+	{
+		"name" : "The Suitcase",
+		"author" : "Sergei Dovlatov",
+		"size" : 388,
+		"edition" : 8995,
+		"date" : "1986-03-23"
+	},
+	{
+		"name" : "Fight club",
+		"author" : "Chuck Palahniuk",
+		"size" : 256,
+		"edition" : 600,
+		"date" : "1996-08-17"
+	},
+	{
+		"name" : "Ben-Hur",
+		"author" : "Lewis Wallace",
+		"size" : 203,
+		"edition" : 100000,
+		"date" : "1880-11-12"
+	},
+	{
+		"name" : "The woman with the book",
+		"author" : "Meyno Alida Mijnders-van Woerden",
+		"size" : 460,
+		"edition" : 1000,
+		"date" : "1994-01-07"
+	},
+	{
+		"name" : "The Little Prince",
+		"author" : "Antoine de Saint-Exupery",
+		"size" : 100,
+		"edition" : 400000,
+		"date" : "1943-09-13"
+	}
+]
