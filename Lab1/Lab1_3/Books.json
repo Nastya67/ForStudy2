@@ -1,0 +1,37 @@
+[
+	{
+		"name" : "451 degrees Fahrenheit",
+		"author" : "Rey Bredbery",
+		"size" : 500,
+		"edition" : 14000,
+		"date" : "1953-11-21"
+	},
+	{
+		"name" : "The Little Prince",
+		"author" : "Antoine de Saint-Exupery",
+		"size" : 100,
+		"edition" : 400000,
+		"date" : "1943-09-13"
+	},
+	{
+		"name" : "Dandelion Wine",
+		"author" : "Rey Bredbery",
+		"size" : 634,
+		"edition" : 60000,
+		"date" : "1957-10-13"
+	},
+	{
+		"name" : "Flowers for Algernon",
+		"author" : "Daniel Keyes",
+		"size" : 600,
+		"edition" : 5000,
+		"date" : "1959-04-01"
+	},
+	{
+		"name" : "Fight club",
+		"author" : "Chuck Palahniuk",
+		"size" : 256,
+		"edition" : 600,
+		"date" : "1996-08-17"
+	}
+]

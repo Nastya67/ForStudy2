@@ -13,13 +13,13 @@ client.connect(parseInt(PORT, 10), IP.trim(), function() {
 
 
 client.on('data', function(data) {
-	console.log('Received: ' + data);
+	console.log('Server: ' + data);
 	let mes = sget();
 	client.write(mes);
-
+	console.log("Client: "+mes);
 
 	if(mes.trim() == "exit")
-			client.destroy();//client.write('q');
+		client.destroy();//client.write('q');
 	//client.destroy(); // kill client after server's response
 });
 
