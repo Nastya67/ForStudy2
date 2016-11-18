@@ -4,21 +4,44 @@
     <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
     <meta charset="utf-8">
     <title>User profile</title>
+    <link href="{{url_for('static', filename = 'Style.css')}}" rel="stylesheet" media="all"/>
     <script src="{{url_for('static', filename = 'Client.js')}}"></script>
-    <style>
-      html, body {
-        height: 100%;
-        margin: 0;
-        padding: 0;
-      }
-      #map {
-        height: 100%;
-      }
-    </style>
+
   </head>
   <body>
+    <img class="top_picture" src="{{url_for('static', filename='top2.jpg')}}">
+
+    <div class='left_colomn'>
+      <table>
+        <tr>
+          {%if foto%}
+            <img src = "{{foto}}">
+          {%else%}
+            <img src="{{url_for('static', filename = 'default-avatar.jpg')}}">
+          {%endif%}
+          <form method="post" enctype="multipart/form-data">
+            {{form[0].foto()}}
+            {{form[0].submit(class = 'button')}}
+            {{ form[0].csrf_token }}
+          </form>
+        </tr>
+        <tr>
+          <h1>{{user_data.get('surname')}}
+              {{user_data.get('name')}}
+          </h1>
+        </tr>
+        <tr>
+          <form method="post">
+            {{form[1].submit(class = 'button')}}
+            {{ form[1].csrf_token }}
+          </form>
+        </tr>
+    </table>
+    </div>
     <div id="map"></div>
+
     <script async defer
         src="https://maps.googleapis.com/maps/api/js?key=&signed_in=true&callback=initMap"></script>
+
   </body>
 </html>

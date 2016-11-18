@@ -6,9 +6,9 @@ import json
 from flask import request
 import postgresql
 import random
+from base64 import b64decode
+import hashlib
 
-
-bd_inf = []
 
 class Vhod(FlaskForm):
     login = wtforms.StringField("Login", validators=[Required()])
@@ -26,6 +26,14 @@ class Reg(FlaskForm):
     byear = wtforms.SelectField('Year', choices=[(str(i), i) for i in range(1916, 2016)])
     submit = wtforms.SubmitField('OK')
 
+class Add_foto(FlaskForm):
+    foto = wtforms.FileField("Avatar")
+    submit = wtforms.SubmitField('Change Photo')
+
+class Create_point(FlaskForm):
+    Text = wtforms.TextField('Text')
+    submit = wtforms.SubmitField('Create new popinter')
+
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'qpwoeiruty'
 count = 100
@@ -34,27 +42,41 @@ alfa_count1 = 0
 alfa_count2 = 0
 alfa_count3 = 0
 
-@app.route("/", methods=['GET', 'POST'])
-def index():
+arr_foto = {}
+
+@app.route("/<id>", methods=['GET', 'POST'])
+def index(id):
+    form = []
+    form.append(Add_foto())
+    form.append(Create_point())
+    user_inf = get_user_info(id)
+    session['name'] = user_inf['name']
+    session['surname'] = user_inf['surname']
     if request.method == 'GET':
-        return render_template('userStr.html', user_data = session)
+        return render_template('userStr.html', user_data = session, form = form)
     else:
+        if form[0].validate_on_submit():
+            arr_foto = {}
+            arr_foto[id] = form.foto.data
+            return render_template('userStr.html', user_data = session, form = form, foto = arr_foto[id])
+        elif form[1].validate_on_submit():
+            a = []
         print(request.data)
         return 'Ok'
 
-@app.route("/vhod", methods=['GET', 'POST'])
+@app.route("/", methods=['GET', 'POST'])
 def vhod():
     form = Vhod()
     print(form.errors)
     if form.validate_on_submit():
         user = select_where_log(form.login.data)
-        if(user['password'] == form.password.data):
+        if(hashlib.md5(form.password.data.encode('utf8')).hexdigest() == user['password']):
             user_inf = get_user_info(user['iduser'])
             session['name'] = user_inf['name']
             session['surname'] = user_inf['surname']
         else:
             return 'Ne OK'
-        return redirect(url_for('index'))
+        return redirect(url_for('index', id = user_inf['iduser']))
     return render_template('vhod.html', form = form, user_data = session)
 
 @app.route("/reg", methods=['GET', 'POST'])
@@ -66,18 +88,18 @@ def reg():
         save_info(id, form)
         session['name'] = form.name.data
         session['surname'] = form.surname.data
-        return redirect(url_for('index'))
+        return redirect(url_for('index', id = id))
     return render_template('reg.html', form = form)
 
 def save_log(id, login, password):
      with postgresql.open("pq://postgres:poqwiueryt@localhost/CorseWork") as db:
          ins = db.prepare("INSERT INTO logpass VALUES ($1, $2, $3)")
-         ins(id, password, login)
+         ins(id, hashlib.md5(password.encode('utf8')).hexdigest(), login.lower())
 
 def select_where_log(login):
     with postgresql.open("pq://postgres:poqwiueryt@localhost/CorseWork") as db:
         sel = db.prepare("SELECT * FROM logpass WHERE login = $1")
-        users = sel(login)
+        users = sel(login.lower())
     return users[0]
 
 def get_user_info(id):

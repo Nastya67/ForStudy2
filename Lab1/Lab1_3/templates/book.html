@@ -2,7 +2,7 @@
   <head>
     <meta charset="utf-8">
     <link href="{{url_for('static', filename = 'stale.css')}}"  rel="stylesheet" media="all"/>
-    <title="Book"/>
+    <title>Book</title>
   </head>
   <body>
     <h1 class="titles">{{book[i]["name"]}}</h1>
@@ -16,7 +16,7 @@
       <br>
       Edition: {{book[i]["edition"]}}
     </p>
-    
+
     {%if i+1 < book|length%}
     <p class = "link_next">
       <a href="{{url_for('one_book', index = i+1)}}">next book >></a>
