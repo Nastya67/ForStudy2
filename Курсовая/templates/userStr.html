@@ -26,13 +26,18 @@
           </form>
         </tr>
         <tr>
-          <h1>{{user_data.get('surname')}}
+          <h1>{%if user_data.get('surname')%}
+            {{user_data.get('surname')}}
               {{user_data.get('name')}}
+              {%else %}
+              You don't log in
+              {%endif%}
+
           </h1>
         </tr>
         <tr>
           <form method="post">
-            {{form[1].submit(class = 'button')}}
+            {{form[1].submit(class = 'button', onclick = "listen_map()")}}
             {{ form[1].csrf_token }}
           </form>
         </tr>
