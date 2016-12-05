@@ -12,36 +12,41 @@
     <img class="top_picture" src="{{url_for('static', filename='top2.jpg')}}">
 
     <div class='left_colomn'>
+      {%if user_data.get('surname')%}
       <table>
         <tr>
-          {%if foto%}
-            <img src = "{{foto}}">
+          {%if user_data.get('userphoto')%}
+            <img class='avatar' src = "{{url_for('static', filename = user_data.get('userphoto'))}}">
           {%else%}
-            <img src="{{url_for('static', filename = 'default-avatar.jpg')}}">
+            <img class='avatar' src="{{url_for('static', filename = 'default-avatar.jpg')}}">
           {%endif%}
+          {%if form%}
           <form method="post" enctype="multipart/form-data">
-            {{form[0].foto()}}
+            <p><input type="file" name='photo' accept="image/png, image/jpeg"></p>
             {{form[0].submit(class = 'button')}}
             {{ form[0].csrf_token }}
           </form>
+          {%endif%}
         </tr>
         <tr>
-          <h1>{%if user_data.get('surname')%}
+          <h1>
             {{user_data.get('surname')}}
               {{user_data.get('name')}}
-              {%else %}
-              You don't log in
-              {%endif%}
-
           </h1>
         </tr>
         <tr>
+          {%if form%}
           <form method="post">
-            {{form[1].submit(class = 'button', onclick = "listen_map()")}}
-            {{ form[1].csrf_token }}
+            <p><input type="submit", name="Logout" class="button" value="Log out"></p>
           </form>
+          {%endif%}
         </tr>
     </table>
+    {%else%}
+    <h1>
+      You don't log in
+    </h1>
+    {%endif%}
     </div>
     <div id="map"></div>
 

@@ -1,0 +1,55 @@
+body{
+  background: url("fon5.jpg") no-repeat center center fixed;
+        -webkit-background-size: cover;
+        -moz-background-size: cover;
+        -o-background-size: cover;
+        background-size: cover;
+        margin-left: 20%;
+        margin-right: 20%;
+        font-family: Calibri;
+        font-size: 20px;
+}
+.titles{
+
+  text-align: center;
+  font-family:cursive;
+  font-size: 50px;
+}
+
+.icon{
+  width: 35px;
+  height: 35px;
+}
+a{
+  font-size: 30px;
+}
+p{
+  font-size: 20px;
+}
+/*.link_next{
+  position: absolute;
+  bottom: 0;
+  left: 40%;
+}*/
+.link_home{
+  position:fixed;
+  bottom: 0;
+  right: 20%;
+}
+.link_list{
+  position: fixed;
+  bottom: 0%;
+  left: 20%;
+}
+.mini_pic{
+  float: left;;
+  margin-right: 20px;
+  width: 95px;
+  height: 125px;
+}
+.pic{
+  float: left;;
+  margin-right: 20px;
+  width: 380px;
+  height: 500px;
+}

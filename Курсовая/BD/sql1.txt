@@ -1,0 +1,11 @@
+ALTER TABLE posts ADD COLUMN postphoto text;
+
+CREATE VIEW userchat AS 
+	SELECT iduser,name,surname,userphoto FROM users
+    WITH CASCADED CHECK OPTION;
+    
+DROP VIEW userchat;
+
+SELECT * FROM userchat ;
+-- 
+UPDATE users SET userphoto='D:/test' WHERE iduser='';
