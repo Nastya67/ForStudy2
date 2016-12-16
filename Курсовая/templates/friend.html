@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta charset="utf-8">
+    <title>list followers</title>
+    <link href="{{url_for('static', filename = 'Style.css')}}" rel="stylesheet" media="all"/>
+    <script src="{{url_for('static', filename = 'Client.js')}}"></script>
+
+  </head>
+  <body>
+    <br><br><br>
+    <img class="top_picture" src="{{url_for('static', filename='top2.jpg')}}">
+    <br><br><br>
+    <form method="post" onsubmit="filter()" id="formx">
+      <h4>You can find follower</h4>
+      {{form.nameFollower(class='searchbox')}}
+
+      {{form.submit(class='okey')}}
+      <br>
+      {{ form.csrf_token }}
+    </form>
+    <div class="for_list" id="results">
+    <ul>
+    {%for i in range(0, friends|length)%}
+    <a  class="name_link" href="{{url_for('index', id = friends[i][0][0])}}">
+      <li>
+        <span class="crop">
+        {%if friends[i][0][3]%}
+          <img  style="vertical-align: middle;" src = "{{url_for('static', filename = friends[i][0][3])}}">
+        {%else%}
+          <img  style="vertical-align: middle;" src="{{url_for('static', filename = 'default-avatar.jpg')}}">
+        {%endif%}
+      </span>
+        <h2>{{friends[i][0][1]}}
+      {{friends[i][0][2]}}</h2>
+    </li></a>
+    {%endfor%}
+  </ul>
+</div>
+  </body>
+</html>

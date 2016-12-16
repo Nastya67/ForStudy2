@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta charset="utf-8">
+    <title>User profile</title>
+  </head>
+  <body>
+  <form method="post">
+    {{form1.logout()}}
+    {{form1.csrf_token}}
+  </form>
+  <form id="app2" method="post">
+    {{form2.submit()}}
+    {{form2.csrf_token}}
+  </form>
+  <form method="post">
+    <input type="submit", name="Logout" class="button" value="Log out">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+
+  </form>
+  </body>
+</html>

@@ -14,7 +14,7 @@
     <img class="top_picture" src="{{url_for('static', filename='top2.jpg')}}">
     <br><br><br>
 
-    <form method="post">
+    <form method="post" class="forma">
       <h1>Sign up</h1>
       {{form.name.label }}
       <br>
@@ -51,6 +51,9 @@
       {{form.password2.label}}
       <br>
       {{form.password2(class='textbox')}}
+      {%if form.password2.errors%}
+      {{form.password2.errors[0]}}
+      {%endif%}
       <br><br>
       {{form.submit(class='button')}}
       <br>
