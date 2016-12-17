@@ -14,6 +14,7 @@ import hashlib
 from werkzeug.utils import secure_filename
 import os
 import binascii
+import Config
 
 
 class Vhod(FlaskForm):
