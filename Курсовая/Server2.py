@@ -33,8 +33,8 @@ class Reg(FlaskForm):
     byear = wtforms.SelectField('Year', choices=[(str(i), i) for i in range(1916, 2016)])
     submit = wtforms.SubmitField('OK')
 
-class Search_follower(FlaskForm):
-    nameFollower = wtforms.StringField("Name Follower")
+class Search(FlaskForm):
+    nameFollower = wtforms.StringField("Name ")
     submit = wtforms.SubmitField('Find')
 
 class Add_foto(FlaskForm):
@@ -96,13 +96,23 @@ def index(id):
     form["Log_out"] = Log_out()
     if request.method == 'GET':
         if(id == session.get('id')):
-            return render_template('userStr.html', user_data = session, form = form, authorization = session.get('id'))
+            return render_template('userStr.html', user_data = session, form = form,
+            authorization = session.get('id'), sub = True)
         else:
             user = get_user_info(id)
+            user_dict = {}
             if(user):
+                user_dict['id'] = user['iduser']
+                user_dict['name'] = user['name']
+                user_dict['surname'] = user['surname']
+                user_dict['roles'] = user['roles']
+                user_dict['userphoto'] = user['userphoto']
+                user_dict['posts'] = json.dumps(select_posts(id))
                 if session.get('roles') == 2:
-                    return render_template('userStr.html', user_data = user, form = form, authorization = bool(session.get('id')))
-                return render_template('userStr.html', user_data = user, authorization = session.get('id'))
+                    return render_template('userStr.html', user_data = user_dict, form = form,
+                    authorization = session.get('id'), sub = chek_subscribe(session.get('id'), id))
+                return render_template('userStr.html', user_data = user_dict, authorization = session.get('id'),
+                sub = chek_subscribe(session.get('id'), id))
             else:
                 return "User does not exist"
     elif request.method == 'POST' and request.form.get('Logout') and session.get("id"):
@@ -112,6 +122,13 @@ def index(id):
         del session['birthday']
         del session['roles']
         return redirect(url_for('vhod'))
+    elif request.form.get('followers'):
+        return redirect(url_for("followers", id = id))
+    elif request.form.get('subscriptions'):
+        return redirect(url_for("subscription", id = id))
+    elif request.form.get('follow'):
+        new_subscribe(session['id'], id)
+        return redirect(request.url)
     elif request.method == 'POST' and (id == session['id'] or session.get('roles') == 2):
         if form["Add_foto"].validate_on_submit() and 'photo' in request.files:
             file = request.files['photo']
@@ -127,8 +144,7 @@ def index(id):
             else:
                 print('Invalid format')
                 return redirect(request.url)
-        elif request.form.get('friends'):
-            return redirect(url_for("followers", id = id))
+
         else:
             latlng = request.data.decode('utf-8')
             ll3 = latlng[1:-1].partition(", ")
@@ -138,14 +154,33 @@ def index(id):
     else:
         return "you can't to do this"
 
+@app.route("/<id>/subscription", methods=["GET", "POST"])
+def subscription(id):
+    form = Search()
+    if request.method == 'GET':
+        user_list = get_list_subscription(id)
+        return render_template("friend.html", friends = user_list, form = form)
+    elif request.method == 'POST':
+        res = []
+        user_list = get_list_subscription(id)
+        for user in user_list:
+            res.append(user[0])
+        print(request.data.decode('utf-8'))
+        return json.dumps(res)
+
 @app.route("/<id>/followers", methods=["GET", "POST"])
 def followers(id):
-    form = Search_follower()
+    form = Search()
     if request.method == 'GET':
         user_list = get_list_follower(id)
         return render_template("friend.html", friends = user_list, form = form)
     elif request.method == 'POST':
-        return []
+        res = []
+        user_list = get_list_follower(id)
+        for user in user_list:
+            res.append(user[0])
+        print(request.data.decode('utf-8'))
+        return json.dumps(res)
 
 @app.route("/", methods=['GET', 'POST'])
 def vhod():
@@ -161,7 +196,7 @@ def vhod():
             session['userphoto'] = user_inf['userphoto']
             session['birthday'] = '%s-%s-%s' %(str(user_inf['bday']),
             str(user_inf['bmonth']), str(user_inf['byear']))
-            session['posts'] = select_posts(session['id'])
+            session['posts'] = json.dumps(select_posts(session['id']))
             session['roles'] = user_inf['roles']
         else:
             return redirect(url_for("vhod"))
@@ -183,6 +218,14 @@ def reg():
     return render_template("reg.html", form = form)
     return redirect(url_for('vhod'))
 
+def chek_subscribe(id1, id2):
+    with postgresql.open("pq://postgres:poqwiueryt@localhost/CorseWork") as db:
+        ins = db.prepare("SELECT * FROM friendlist WHERE  id1 = $1 and id2 = $2")
+        para = ins(id1, id2)
+        if para:
+            return 1
+        return 0
+
 def new_post(id, lat, lng):
     with postgresql.open("pq://postgres:poqwiueryt@localhost/CorseWork") as db:
         ins = db.prepare("INSERT INTO posts (idpost, iduser, longitude, latitude, chocolate) "
@@ -190,13 +233,19 @@ def new_post(id, lat, lng):
         postid = id_generator(3, alfas)
         ins(postid, id, lng, lat, 0)
 
+def new_subscribe(id1, id2):
+    if not chek_subscribe(id1, id2):
+        with postgresql.open("pq://postgres:poqwiueryt@localhost/CorseWork") as db:
+            ins = db.prepare("INSERT INTO friendlist VALUES ($1, $2)")
+            ins(id1, id2)
+
 def select_posts(id):
     with postgresql.open("pq://postgres:poqwiueryt@localhost/CorseWork") as db:
         sel = db.prepare("SELECT * FROM posts WHERE iduser = $1")
         posts = sel(id)
     if posts:
         return posts
-    return 0
+    return []
 
 
 def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
@@ -208,6 +257,15 @@ def save_log(id, login, password):
          ins(id, hashlib.md5(password.encode('utf8')).hexdigest(), login.lower())
 
 def get_list_follower(id):
+    with postgresql.open("pq://postgres:poqwiueryt@localhost/CorseWork") as db:
+        sel = db.prepare("SELECT (iduser, name, surname, userphoto) FROM"
+        " friendlist INNER JOIN users on id1=iduser WHERE id2 = $1;")
+        users = sel(id)
+    if users:
+        return users
+    return []
+
+def get_list_subscription(id):
     with postgresql.open("pq://postgres:poqwiueryt@localhost/CorseWork") as db:
         sel = db.prepare("SELECT (iduser, name, surname, userphoto) FROM"
         " friendlist INNER JOIN users on id2=iduser WHERE id1 = $1;")
@@ -236,7 +294,7 @@ def get_user_info(id):
         users = sel(id)
     if users:
         return users[0]
-    return 0
+    return {}
 
 def save_info(id, form):
     with postgresql.open("pq://postgres:poqwiueryt@localhost/CorseWork") as db:

@@ -10,6 +10,7 @@
 
   </head>
   <body>
+    <spam hidden="true" id="posts">{{user_data.get("posts")}}</spam>
     <img class="top_picture" src="{{url_for('static', filename='top2.jpg')}}">
     {%if authorization%}
     <form method="post">
@@ -46,9 +47,23 @@
         <tr>
           <form method="post" class="forma">
             <p><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-              <input type="submit", name="friends" class="button" value="Folowers"></p>
+              <input type="submit", name="followers" class="button" value="Folowers"></p>
           </form>
         </tr>
+        <tr>
+          <form method="post" class="forma">
+            <p><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+              <input type="submit", name="subscriptions" class="button" value="Subscriptions"></p>
+          </form>
+        </tr>
+        {%if authorization and user_data.get("id")!=authorization and not sub%}
+        <tr>
+          <form method="post" class="forma">
+            <p><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+              <input type="submit", name="follow" class="button" value="Follow"></p>
+          </form>
+        </tr>
+        {%endif%}
     </table>
     {%else%}
     <h1>
