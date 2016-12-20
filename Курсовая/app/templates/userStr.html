@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta charset="utf-8">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>User profile</title>
+    <link href="{{url_for('static', filename = 'Style.css')}}" rel="stylesheet" media="all"/>
+    <script src="{{url_for('static', filename = 'Client.js')}}"></script>
+
+  </head>
+  <body>
+    <spam hidden="true" id="posts">{{user_data.get("posts")}}</spam>
+    <img class="top_picture" src="{{url_for('static', filename='top2.jpg')}}">
+    {%if authorization%}
+    <form method="post">
+      <p><input type="submit", name="Logout" class="logout" value="Log out">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/></p>
+    </form>
+    {%else%}
+    <p class = 'primary_link'><a href="{{url_for('vhod')}}">Log in</a></p>
+    {%endif%}
+    <div class='left_colomn'>
+      {%if user_data.get('surname')%}
+      <table>
+        <tr>
+          {%if user_data.get('userphoto')%}
+            <img class='avatar' src = "{{url_for('static', filename = user_data.get('userphoto'))}}">
+          {%else%}
+            <img class='avatar' src="{{url_for('static', filename = 'default-avatar.jpg')}}">
+          {%endif%}
+          {%if form%}
+          <form method="post" enctype="multipart/form-data" class="forma">
+            <p><input type="file" name='photo' accept="image/png, image/jpeg"></p>
+            {{form["Add_foto"].submit(class = 'button')}}
+            {{ form["Add_foto"].csrf_token }}
+          </form>
+          {%endif%}
+        </tr>
+        <tr>
+          <h1>
+            {{user_data.get('surname')}}
+              {{user_data.get('name')}}
+          </h1>
+        </tr>
+
+        <tr>
+          <form method="post" class="forma">
+            <p><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+              <input type="submit", name="followers" class="button" value="Folowers"></p>
+          </form>
+        </tr>
+        <tr>
+          <form method="post" class="forma">
+            <p><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+              <input type="submit", name="subscriptions" class="button" value="Subscriptions"></p>
+          </form>
+        </tr>
+        {%if authorization and user_data.get("id")!=authorization and not sub%}
+        <tr>
+          <form method="post" class="forma">
+            <p><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+              <input type="submit", name="follow" class="button" value="Follow"></p>
+          </form>
+        </tr>
+        {%endif%}
+    </table>
+    {%else%}
+    <h1>
+      You don't log in
+    </h1>
+    {%endif%}
+    </div>
+    <div id="map"></div>
+
+    <script async defer
+      src={{"https://maps.googleapis.com/maps/api/js?key={0}&signed_in=true&callback=initMap".format(key)}}>
+    </script>
+
+  </body>
+</html>

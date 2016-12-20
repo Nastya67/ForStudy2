@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta charset="utf-8">
+    <title>Vhod</title>
+    <link href="{{url_for('static', filename = 'Style.css')}}" rel="stylesheet" media="all"/>
+    <script src="{{url_for('static', filename = 'Client.js')}}"></script>
+
+  </head>
+  <body>
+    <br><br><br>
+    <p class = 'primary_link'><a href="{{url_for('reg')}}">Sign up</a></p>
+    <img class="top_picture" src="{{url_for('static', filename='top2.jpg')}}">
+    <br><br><br>
+
+    <form method="post" class="forma">
+      <h1>Log in</h1>
+      {{form.login.label }}
+      <br>
+       {{form.login(class='textbox')}}
+      <br>
+      {{form.password.label}}
+      <br>
+      {{form.password(type='password', class='textbox')}}
+      <br><br>
+      {{form.submit(class='button')}}
+      <br>
+      {{ form.csrf_token }}
+    </form>
+
+
+  </body>
+</html>
