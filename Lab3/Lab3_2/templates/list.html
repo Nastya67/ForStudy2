@@ -1,0 +1,80 @@
+<html>
+  <head>
+    <meta charset="utf-8">
+    <link href="{{url_for('static', filename = 'stale.css')}}"  rel="stylesheet" media="all"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mustache.js/2.2.1/mustache.min.js"></script>
+    <script src="{{url_for('static', filename = 'Client.js')}}"></script>
+
+    <title="List"/>
+  </head>
+  <body>
+    {%if session['id']: %}
+    <h6 class="text_right">
+      {{session['name']}} {{session['surname']}} &nbsp
+      {%if session['admin']%}
+        <a href="{{url_for('users')}}">Users</a>&nbsp
+      {%endif%}
+      <a href="{{url_for('log_in')}}">Log out</a>
+    </h6>
+    {%else%}
+    <h6 class="text_right"><a href="{{url_for('log_in')}}">Log in</a><h6>
+    {%endif%}
+    <hr>
+    <h1 class="titles">Books</h1>
+
+    <form>
+      <input id="searchBox" type="text" name="field_find" value={{find_val}}>
+      <input type="button" onclick=filter_books() name="find" value="Find">
+    </form>
+    <a href={{url_for("new_book")}}>
+      New book
+    </a>
+    <div id="my-list">
+    <br>
+    {%if find_val%}
+    <p>Your search <b>{{find_val}}</b></p>
+    {%endif%}
+    {%if books%}
+    {%for i in range(0, books|length)%}
+    <p>
+      <a href="{{url_for('one_book', index = books[i]['book_id'])}}">
+        {%if books[i].get('book_photo')%}
+          <img class="mini_pic" src="{{url_for('static', filename = books[i].get('book_photo'))}}" alt="Обложка"/>
+        {%else%}
+          <img class="mini_pic" src="{{url_for('static', filename = 'def.jpg')}}" alt="Обложка"/>
+        {%endif%}
+        {{books[i]["book_name"]}}</a>
+    </p>
+    <br><br><br><br>
+    {%endfor%}
+    {%else%}
+    <h4>Books not found</h4>
+    {%endif%}
+  </div>
+  {% raw %}
+  <script type="x-tmpl-mustache" id='filter'>
+  {{#listd}}
+  <p>
+    <a href="/book/{{book_id}}">
+    <img class="mini_pic" src="../static/{{book_photo}}" alt="Обложка"/>
+    {{book_name}}</a>
+  </p>
+  {{/listd}}
+  </script>
+  {%endraw%}
+    <p class = "link_home">
+      <a href="{{url_for('home')}}">Home page</a>
+    </p>
+    {%if not find_val%}
+      <p>
+        {%if page['cur'] %}
+          <a class = "link_previous" href="{{'/list?page={0}'.format(page['cur']-1)}}">{{page['cur']-1}}</a>
+        {%endif%}
+        {{page['cur']}}
+        {%if page['cur']< page['max']-1%}
+          <a class = "link_next" href="{{'/list?page={0}'.format(page['cur']+1)}}">{{page['cur']+1}}</a>
+        {%endif%}
+      </p>
+    {%endif%}
+  </body>
+</html>

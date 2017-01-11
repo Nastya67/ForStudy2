@@ -1,0 +1,37 @@
+<html>
+  <head>
+    <meta charset="utf-8">
+    <link href="{{url_for('static', filename = 'stale.css')}}"  rel="stylesheet" media="all"/>
+    <title="List"/>
+  </head>
+  <body>
+    {%if session['id']: %}
+    <h6 class="text_right">
+      {{session['name']}} {{session['surname']}} &nbsp
+      {%if session['admin']%}
+        <a href="{{url_for('users')}}">Users</a>&nbsp
+      {%endif%}
+      <a href="{{url_for('log_in')}}">Log out</a>
+    </h6>
+    {%else%}
+    <h6 class="text_right"><a href="{{url_for('log_in')}}">Log in</a><h6>
+    {%endif%}
+    <hr>
+    <h1 class="titles">Users</h1>
+
+    <br>
+    {%if user_list%}
+    {%for i in range(0, user_list|length)%}
+    <p>
+        {{user_list[i]["user_name"]}} {{user_list[i]["user_surname"]}}
+    </p>
+    {%endfor%}
+    {%else%}
+    Users not found
+    {%endif%}
+
+    <p class = "link_home">
+      <a href="{{url_for('home')}}">Home page</a>
+    </p>
+  </body>
+</html>

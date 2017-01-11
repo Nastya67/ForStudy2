@@ -13,9 +13,7 @@
     <img class="top_picture" src="{{url_for('static', filename='top2.jpg')}}">
     <br><br><br>
     <form method="post" onsubmit="filter()" id="formx">
-      
       {{form.nameFollower(class='searchbox')}}
-
       {{form.submit(class='okey')}}
       <br>
       {{ form.csrf_token }}

@@ -23,12 +23,12 @@ class Vhod(FlaskForm):
     submit = wtforms.SubmitField('OK')
 
 class Reg(FlaskForm):
-    name = wtforms.StringField("Name", validators=[Required()])
-    surname = wtforms.StringField("Surname", validators=[Required()])
-    login = wtforms.StringField("Login", validators=[Required()])
-    password = wtforms.PasswordField("Your password", validators=[Required()])
+    name = wtforms.StringField("Name", validators=[Required(message="Enter your name")])
+    surname = wtforms.StringField("Surname", validators=[Required("Enter your surname")])
+    login = wtforms.StringField("Login", validators=[Required("Enter your login")])
+    password = wtforms.PasswordField("Your password", validators=[Required("Enter your password")])
     password2 = wtforms.PasswordField("Repeat your password", validators=[Required(),
-    EqualTo('password', message='wrong password')])
+    EqualTo('password', message='Wrong password')])
     bday = wtforms.SelectField('Day', choices=[(str(i), i) for i in range(1, 32)])
     bmonth = wtforms.SelectField('Month', choices=[(str(i), i) for i in range(1,13)])
     byear = wtforms.SelectField('Year', choices=[(str(i), i) for i in range(1916, 2016)])
@@ -53,10 +53,11 @@ class Log_out(FlaskForm):
 
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
 WTF_CSRF_SECRET_KEY = 'qpwoeiruty'
+UPLOAD_FOLDER = r"D:\Nastya\Учеба\2курс\ОВП\ForStudy2\corseWorkLocal\static"
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'qpwoeiruty'
-#app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 csrf = CsrfProtect()
 csrf.init_app(app)
 count = 100
@@ -76,9 +77,21 @@ def row_to_dict_posts(posts):
         post_dict['idpost'] = post['idpost']
         post_dict['longitude'] = post['longitude']
         post_dict['latitude'] = post['latitude']
+        post_dict['text'] = post['posttext']
         res.append(post_dict)
     print(res)
     return res
+
+def init_session(id):
+    user_inf = get_user_info(id)
+    session['id'] = user_inf['iduser']
+    session['name'] = user_inf['name']
+    session['surname'] = user_inf['surname']
+    session['userphoto'] = user_inf['userphoto']
+    session['birthday'] = '%s-%s-%s' %(str(user_inf['bday']),
+    str(user_inf['bmonth']), str(user_inf['byear']))
+    session['posts'] = row_to_dict_posts(select_posts(session['id']))
+    session['roles'] = user_inf['roles']
 
 @app.route("/api/<id>", methods=['GET', 'POST'])
 def api_index(id):
@@ -104,12 +117,11 @@ def api_index(id):
         file = request.files['photo']
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
-            file.save(os.path.join("apploadFolder", filename))
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
             update_photo(id, filename)
             session['userphoto'] = filename
             return 'ok'
         return 'Ok'
-
 
 @app.route("/<id>", methods=['GET', 'POST'])
 def index(id):
@@ -119,9 +131,10 @@ def index(id):
     form["Log_out"] = Log_out()
     if request.method == 'GET':
         if(id == session.get('id')):
+            session['posts'] = json.dumps(select_posts(id))
             return render_template('userStr.html', user_data = session, form = form,
             authorization = session.get('id'), sub = True, key = Config.key_google)
-        else:
+        else: 
             user = get_user_info(id)
             user_dict = {}
             if(user):
@@ -161,18 +174,18 @@ def index(id):
                 return redirect(request.url)
             elif file and allowed_file(file.filename):
                 filename = secure_filename(file.filename)
-                file.save(os.path.join("apploadFolder", filename))
+                file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
                 update_photo(id, filename)
                 session['userphoto'] = filename
                 return redirect(request.url)
             else:
                 print('Invalid format')
                 return redirect(request.url)
-
         else:
-            latlng = request.data.decode('utf-8')
-            ll3 = latlng[1:-1].partition(", ")
-            new_post(session['id'], float(ll3[0]), float(ll3[2]))
+            print(request.data.decode('utf-8'))
+            data = json.loads(request.data.decode('utf-8'))
+            latlng = data['location']
+            new_post(session['id'], latlng['lat'], latlng['lng'], data['text'])
             return flask.make_response("Ok")
 
     else:
@@ -181,30 +194,71 @@ def index(id):
 @app.route("/<id>/subscription", methods=["GET", "POST"])
 def subscription(id):
     form = Search()
+    del_id = 0
+    del_id = request.args.get("id")
     if request.method == 'GET':
         user_list = get_list_subscription(id)
-        return render_template("friend.html", friends = user_list, form = form)
-    elif request.method == 'POST':
+        if session.get("id") == id:
+            return render_template("friend.html", title="subscription",  friends = user_list, can = True)
+        else:
+            return render_template("friend.html", title="subscription",  friends = user_list, can = False)
+    elif request.method == "POST" and session.get("id")==id and del_id:
+        del_follower(session["id"], del_id)
+        return redirect(request.url)
+    elif request.method == 'POST' :
         res = []
         user_list = get_list_subscription(id)
         for user in user_list:
             res.append(user[0])
         print(request.data.decode('utf-8'))
+        print(request.json)
         return json.dumps(res)
+    else:
+        return redirect(request.url)
+
+@app.route("/api/<id>/subscription", methods=["GET", "POST"])
+def subscription_api(id):
+    form = Search()
+    del_id = request.args.get("id")
+    if request.method == 'GET':
+        user_list = get_list_subscription(id)
+        return json.dumps(user_list)
+    elif request.method == 'POST':
+        id2 = request.get.args("id")
+        new_subscribe(session['id'], id)
+        return "{status: OK}"
+
+@app.route("/api/<id>/followers", methods=["GET"])
+def followers_api(id):
+    form = Search()
+    if request.method == 'GET':
+        user_list = get_list_follower(id)
+        return json.dumps(user_list)
+
 
 @app.route("/<id>/followers", methods=["GET", "POST"])
 def followers(id):
     form = Search()
+    del_id = request.args.get("id")
     if request.method == 'GET':
         user_list = get_list_follower(id)
-        return render_template("friend.html", friends = user_list, form = form)
+        if session.get("id") == id:
+            return render_template("friend.html", title = "followers", friends = user_list, can = True)
+        else:
+            return render_template("friend.html", title = "followers", friends = user_list, can = False)
+    elif request.method == "POST" and session.get("id")==id and del_id:
+        del_follower(del_id, session["id"])
+        return redirect(request.url)
     elif request.method == 'POST':
         res = []
         user_list = get_list_follower(id)
         for user in user_list:
             res.append(user[0])
         print(request.data.decode('utf-8'))
+        print(request.data)
         return json.dumps(res)
+    else:
+        return redirect(request.url)
 
 @app.route("/", methods=['GET', 'POST'])
 def vhod():
@@ -213,18 +267,10 @@ def vhod():
     if form.validate_on_submit():
         user = select_where_log(form.login.data)
         if(hashlib.md5(form.password.data.encode('utf8')).hexdigest() == user['password']):
-            user_inf = get_user_info(user['iduser'])
-            session['id'] = user_inf['iduser']
-            session['name'] = user_inf['name']
-            session['surname'] = user_inf['surname']
-            session['userphoto'] = user_inf['userphoto']
-            session['birthday'] = '%s-%s-%s' %(str(user_inf['bday']),
-            str(user_inf['bmonth']), str(user_inf['byear']))
-            session['posts'] = row_to_dict_posts(select_posts(session['id']))
-            session['roles'] = user_inf['roles']
+            init_session(user['iduser'])
         else:
             return redirect(url_for("vhod"))
-        return redirect(url_for('index', id = user_inf['iduser']))
+        return redirect(url_for('index', id = session['id']))
     return render_template('vhod.html', form = form)
 
 @app.route("/reg", methods=['GET', 'POST'])
@@ -234,10 +280,7 @@ def reg():
         id = id_generator(6, alfas)
         save_log(id, form.login.data, form.password.data)
         save_info(id, form)
-        session['name'] = form.name.data
-        session['surname'] = form.surname.data
-
-
+        init_session(id)
         return redirect(url_for('index', id = id))
     return render_template("reg.html", form = form)
     return redirect(url_for('vhod'))
@@ -250,12 +293,17 @@ def chek_subscribe(id1, id2):
             return 1
         return 0
 
-def new_post(id, lat, lng):
+def new_post(id, lat, lng, text):
     with postgresql.open("pq://postgres:poqwiueryt@localhost/CorseWork") as db:
-        ins = db.prepare("INSERT INTO posts (idpost, iduser, longitude, latitude, chocolate) "
-        "VALUES ($1, $2, $3, $4, $5);")
+        ins = db.prepare("INSERT INTO posts (idpost, iduser, posttext, longitude, latitude, chocolate) "
+        "VALUES ($1, $2, $3, $4, $5, $6);")
         postid = id_generator(3, alfas)
-        ins(postid, id, lng, lat, 0)
+        ins(postid, id, text, lng, lat, 0)
+
+def del_follower(id1, id2):
+    with postgresql.open("pq://postgres:poqwiueryt@localhost/CorseWork") as db:
+        ins = db.prepare("DELETE FROM friendlist WHERE id1=$1 and id2=$2")
+        ins(id1, id2)
 
 def new_subscribe(id1, id2):
     if not chek_subscribe(id1, id2):

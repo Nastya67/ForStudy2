@@ -25,7 +25,8 @@
       <table>
         <tr>
           {%if user_data.get('userphoto')%}
-            <img class='avatar' src = "{{url_for('static', filename = user_data.get('userphoto'))}}">
+          <img class="avatar" src="data:image/jpg;base64, {{user_data.get('userphoto')}}">
+            <!--<img class='avatar' src = "{{url_for('static', filename = user_data.get('userphoto'))}}">-->
           {%else%}
             <img class='avatar' src="{{url_for('static', filename = 'default-avatar.jpg')}}">
           {%endif%}

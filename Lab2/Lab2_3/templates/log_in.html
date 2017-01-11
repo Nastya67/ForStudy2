@@ -1,0 +1,26 @@
+<html>
+  <head>
+    <meta charset="utf-8">
+    <link href="{{url_for('static', filename = 'stale.css')}}"  rel="stylesheet" media="all"/>
+    <title="Home page"/>
+
+  </head>
+  <body>
+    <h6 class="text_right"><a href="{{url_for('sign_up')}}">Sign up</a></h6>
+    <hr>
+    <h1 class="titles">Log in</h1>
+    <form method="post">
+      {{form.login.label}}
+      {{form.login()}}
+      <br>
+      {{form.password.label}}
+      {{form.password()}}
+      {%if error%}
+      <p>{{error}}</p>
+      {%endif%}
+      <br>
+      {{form.submit()}}
+      {{ form.csrf_token }}
+    </form>
+  </body>
+</html>

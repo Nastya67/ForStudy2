@@ -5,7 +5,7 @@ html, body {
   font-family: Calibri;
   font-size: 20px;
 }
-#map {
+#map{
   position: fixed;
   height: 92%;
   width: 80%;
@@ -13,7 +13,19 @@ html, body {
   top: 5%;
   padding-top: 0;
   z-index: 0;
-
+}
+#mapf{
+  position: fixed;
+  height: 50%;
+  width: 50%;
+  left: 20%;
+  top: 20%;
+  padding-top: 0;
+  z-index: 100506;
+}
+.f_error{
+  color: red;
+  text-align: right;
 }
 .avatar{
   float: left;
@@ -27,12 +39,23 @@ html, body {
   top: 8%;
   bottom: 0;
 }
+.modal_box {
+  margin: 0 auto;
+  text-align: center;
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 100505;
+  background: rgba(205, 214, 219, 0.5);
+}
 .forma{
   vertical-align: middle;
-  margin-top: 20%;
+  margin-top: 10%;
   margin:0 auto;
   max-width:50%;
-
+  text-align: inherit;
   box-sizing:border-box;
   padding:40px;
   border-radius:5px;
@@ -86,18 +109,7 @@ h1{
    border:rgba(24,149,215,1) 2px solid;
    color:rgba(24,149,215,1);
 }
-/*.textbox_date{
-  height:45px;
-  width:100%;
-  border-radius:3px;
-  border:rgba(0,0,0,.3) 2px solid;
-  box-sizing:border-box;
-  font-family: 'Open Sans', sans-serif;
-  font-size:18px;
-  padding:10px;
-  margin-bottom: auto;
-}*/
-/* Стили текстового поля */
+
 .message{
     background: rgba(255, 255, 255, 0.4);
     width:100%;
@@ -132,6 +144,7 @@ h1{
 }
 .okey{
   height:45px;
+  width: 100px;
   border-radius:3px;
   border:rgba(0,0,0,.3) 0px solid;
   box-sizing:border-box;
@@ -148,9 +161,7 @@ h1{
 .button:hover, .okey:hover{
   background:#80b438;
 }
-td{
-    width: 24%; /* Ширина ячейки */
-}
+
 .primary_link{
   z-index: 100501;
   font-size: 18pt;
@@ -159,7 +170,7 @@ td{
   left: 70%;
 }
 .logout{
-  z-index: 100501;
+  z-index: 1005;
   font-size: 18pt;
   position: fixed;
   top: 0%;
@@ -209,6 +220,7 @@ ul{
 ul {
   list-style-type: none;
   width: 500px;
+
 }
 
 li {

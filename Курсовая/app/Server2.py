@@ -95,9 +95,7 @@ def index(id):
     form["Create_point"] = Create_point()
     form["Log_out"] = Log_out()
     if request.method == 'GET':
-        print(os.environ.get('kay_map', None))
         if(id == session.get('id')):
-            print(os.environ.get('kay_map'))
             return render_template('userStr.html', user_data = session, form = form,
             authorization = session.get('id'), sub = True, key = os.environ.get('kay_map'))
 
@@ -139,10 +137,10 @@ def index(id):
                 print('No selected file')
                 return redirect(request.url)
             elif file and allowed_file(file.filename):
-                filename = secure_filename(file.filename)
-                file.save(os.path.join("apploadFolder", filename))
-                update_photo(id, filename)
-                session['userphoto'] = filename
+                fstr = file.read()
+                encstr = base64.b64encode(fstr)
+                update_photo(id, encstr)
+                session['userphoto'] = encstr
                 return redirect(request.url)
             else:
                 print('Invalid format')
@@ -160,9 +158,13 @@ def index(id):
 @app.route("/<id>/subscription", methods=["GET", "POST"])
 def subscription(id):
     form = Search()
+    del_id = request.args.get("id")
     if request.method == 'GET':
         user_list = get_list_subscription(id)
         return render_template("friend.html", friends = user_list, form = form)
+    elif request.method == "POST" and session.get("id")==id and del_id:
+        del_follower(session["id"], id)
+        return redirect(request.url)
     elif request.method == 'POST':
         res = []
         user_list = get_list_subscription(id)
@@ -174,9 +176,13 @@ def subscription(id):
 @app.route("/<id>/followers", methods=["GET", "POST"])
 def followers(id):
     form = Search()
+    del_id = request.args.get("id")
     if request.method == 'GET':
         user_list = get_list_follower(id)
         return render_template("friend.html", friends = user_list, form = form)
+    elif request.method == "POST" and session.get("id")==id and del_id:
+        del_follower(id, session["id"])
+        return redirect(request.url)
     elif request.method == 'POST':
         res = []
         user_list = get_list_follower(id)
@@ -213,24 +219,35 @@ def reg():
         id = id_generator(6, alfas)
         save_log(id, form.login.data, form.password.data)
         save_info(id, form)
-        session['name'] = form.name.data
-        session['surname'] = form.surname.data
+        user_inf = get_user_info(id)
+        session['id'] = user_inf['iduser']
+        session['name'] = user_inf['name']
+        session['surname'] = user_inf['surname']
+        session['userphoto'] = user_inf['userphoto']
+        session['birthday'] = '%s-%s-%s' %(str(user_inf['bday']),
+        str(user_inf['bmonth']), str(user_inf['byear']))
+        session['posts'] = json.dumps(select_posts(session['id']))
+        session['roles'] = user_inf['roles']
 
 
         return redirect(url_for('index', id = id))
     return render_template("reg.html", form = form)
-    return redirect(url_for('vhod'))
 
 def chek_subscribe(id1, id2):
-    with postgresql.open(os.environ.get('DATABASE_URL')) as db:
+    with postgresql.open(os.environ.get('URL_DATABASE')) as db:
         ins = db.prepare("SELECT * FROM friendlist WHERE  id1 = $1 and id2 = $2")
         para = ins(id1, id2)
         if para:
             return 1
         return 0
 
+def del_follower(id1, id2):
+    with postgresql.open(os.environ['URL_DATABASE']) as db:
+        ins = db.prepare("DELETE FROM friendlist WHERE id1=$1 and id=$2")
+        ins(id1, id2)
+
 def new_post(id, lat, lng):
-    with postgresql.open("pq://postgres:poqwiueryt@localhost/CorseWork") as db:
+    with postgresql.open(os.environ['URL_DATABASE']) as db:
         ins = db.prepare("INSERT INTO posts (idpost, iduser, longitude, latitude, chocolate) "
         "VALUES ($1, $2, $3, $4, $5);")
         postid = id_generator(3, alfas)
@@ -238,12 +255,12 @@ def new_post(id, lat, lng):
 
 def new_subscribe(id1, id2):
     if not chek_subscribe(id1, id2):
-        with postgresql.open("pq://postgres:poqwiueryt@localhost/CorseWork") as db:
+        with postgresql.open(os.environ['URL_DATABASE']) as db:
             ins = db.prepare("INSERT INTO friendlist VALUES ($1, $2)")
             ins(id1, id2)
 
 def select_posts(id):
-    with postgresql.open("pq://postgres:poqwiueryt@localhost/CorseWork") as db:
+    with postgresql.open(os.environ['URL_DATABASE']) as db:
         sel = db.prepare("SELECT * FROM posts WHERE iduser = $1")
         posts = sel(id)
     if posts:
@@ -255,15 +272,12 @@ def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
     return ''.join(random.choice(chars) for _ in range(size))
 
 def save_log(id, login, password):
-     with postgresql.open("pq://bioxbkbzgfuycm:164f587743a359bf54f22c2b"
-		     "548200c9616cf08f5980429798090409267c93e7@ec2-54-228-235"
-		     "-185.eu-west-1.compute.amazonaws.com:5432/d6q8glhgontf"
-		     "4r") as db:
+     with postgresql.open(os.environ['URL_DATABASE']) as db:
          ins = db.prepare("INSERT INTO logpass VALUES ($1, $2, $3)")
          ins(id, hashlib.md5(password.encode('utf8')).hexdigest(), login.lower())
 
 def get_list_follower(id):
-    with postgresql.open("pq://postgres:poqwiueryt@localhost/CorseWork") as db:
+    with postgresql.open(os.environ['URL_DATABASE']) as db:
         sel = db.prepare("SELECT (iduser, name, surname, userphoto) FROM"
         " friendlist INNER JOIN users on id1=iduser WHERE id2 = $1;")
         users = sel(id)
@@ -272,7 +286,7 @@ def get_list_follower(id):
     return []
 
 def get_list_subscription(id):
-    with postgresql.open("pq://postgres:poqwiueryt@localhost/CorseWork") as db:
+    with postgresql.open(os.environ['URL_DATABASE']) as db:
         sel = db.prepare("SELECT (iduser, name, surname, userphoto) FROM"
         " friendlist INNER JOIN users on id2=iduser WHERE id1 = $1;")
         users = sel(id)
@@ -281,7 +295,7 @@ def get_list_subscription(id):
     return []
 
 def select_where_log(login):
-    with postgresql.open("pq://postgres:poqwiueryt@localhost/CorseWork") as db:
+    with postgresql.open(os.environ['URL_DATABASE']) as db:
         sel = db.prepare("SELECT * FROM logpass WHERE login = $1")
         users = sel(login.lower())
     if users:
@@ -289,13 +303,13 @@ def select_where_log(login):
     return 0
 
 def update_photo(id, foto):
-    with postgresql.open("pq://postgres:poqwiueryt@localhost/CorseWork") as db:
+    with postgresql.open(os.environ['URL_DATABASE']) as db:
         upd = db.prepare("UPDATE users SET userphoto=$1 WHERE iduser=$2")
         upd(foto, id)
     return 0
 
 def get_user_info(id):
-    with postgresql.open("pq://postgres:poqwiueryt@localhost/CorseWork") as db:
+    with postgresql.open(os.environ['URL_DATABASE']) as db:
         sel = db.prepare("SELECT * FROM users WHERE iduser = $1")
         users = sel(id)
     if users:
@@ -303,10 +317,7 @@ def get_user_info(id):
     return {}
 
 def save_info(id, form):
-    with postgresql.open("pq://bioxbkbzgfuycm:164f587743a359bf54f22c2b"
-		     "548200c9616cf08f5980429798090409267c93e7@ec2-54-228-235"
-		     "-185.eu-west-1.compute.amazonaws.com:5432/d6q8glhgontf"
-		     "4r") as db:
+    with postgresql.open(os.environ['URL_DATABASE']) as db:
         ins = db.prepare("INSERT INTO users (iduser, name, surname, bday, "
         "bmonth, byear, roles) VALUES ($1, $2, $3, $4, $5, $6, $7)")
         ins(id, form.name.data, form.surname.data, int(form.bday.data), int(form.bmonth.data),

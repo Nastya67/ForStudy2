@@ -1,0 +1,49 @@
+<html>
+  <head>
+    <meta charset="utf-8">
+    <link href="{{url_for('static', filename = 'stale.css')}}"  rel="stylesheet" media="all"/>
+    <title>Book</title>
+  </head>
+  <body>
+    {%if session['id']: %}
+    <h6 class="text_right">
+      {{session['name']}} {{session['surname']}} &nbsp
+      {%if session['admin']%}
+        <a href="{{url_for('users')}}">Users</a>&nbsp
+      {%endif%}
+      <a href="{{url_for('log_in')}}">Log out</a>
+    </h6>
+    {%else%}
+    <h6 class="text_right"><a href="{{url_for('log_in')}}">Log in</a><h6>
+    {%endif%}
+    <hr>
+    <h1 class="titles">{{book["book_name"]}}</h1>
+
+    <p>
+      {%if book['book_photo']%}
+        <img class="pic" src="{{url_for('static', filename = book['book_photo'])}}" alt="Обложка"/>
+      {%else%}
+        <img class="pic" src="{{url_for('static', filename = 'def.jpg')}}" alt="Обложка"/>
+      {%endif%}
+      Author: {{book["book_author"]}}
+      <br>
+      Date of publication: {{book["book_date"]}}
+      <br>
+      Number of pages: {{book["book_size"]}}
+      <br>
+      Edition: {{book["book_edition"]}}
+      <br><br>
+      <form method="post">
+        <input type="submit" value="Delete" name="delete">
+      </form>
+    </p>
+    <p class = "link_home">
+      <a href="{{url_for('home')}}">
+        Home page</a>
+    </p>
+    <p class = "link_list">
+      <a href="{{url_for('List')}}">
+        back to list</a>
+    </p>
+  </body>
+</html>

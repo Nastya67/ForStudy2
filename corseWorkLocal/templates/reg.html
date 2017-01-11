@@ -12,51 +12,70 @@
     <br><br><br>
     <p class = 'primary_link'><a href="{{url_for('vhod')}}">Log in</a></p>
     <img class="top_picture" src="{{url_for('static', filename='top2.jpg')}}">
-    <br><br><br>
 
     <form method="post" class="forma">
       <h1>Sign up</h1>
-      {{form.name.label }}
-      <br>
-       {{form.name(class='textbox')}}
-        <br>
-      {{form.surname.label }}
-      <br>
-       {{form.surname(class='textbox')}}
-      <br>
-      <table border="0">
-
-          <tr>
-            <td></td>
-            <td>{{form.bday.label }}</td>
-            <td>{{form.bmonth.label }}</td>
-            <td>{{form.byear.label }}</td>
-          </tr>
-          <tr>
-            <td>Birthday</td>
-            <td>{{form.bday(class='textbox_date')}}</td>
-            <td>{{form.bmonth(class='textbox_date')}}</td>
-            <td>{{form.byear(class='textbox_date')}}</td>
-          </tr>
+      <table border="0" width="100%">
+        <tr>
+          <td colspan="2">{{form.name.label }}</td>
+            {%if form.name.errors%}
+              <td colspan="2"><div class="f_error">{{form.name.errors[0]}}</div></td>
+            {%endif%}
+        </tr>
+        <tr>
+          <td colspan="4">{{form.name(class='textbox')}}</td>
+        </tr>
+        <tr>
+          <td colspan="2">{{form.surname.label }}</td>
+          {%if form.surname.errors%}
+            <td colspan="2"><div class="f_error">{{form.surname.errors[0]}}</div></td>
+          {%endif%}
+        </tr>
+        <tr>
+          <td colspan="4">{{form.surname(class='textbox')}}</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>{{form.bday.label }}</td>
+          <td>{{form.bmonth.label }}</td>
+          <td>{{form.byear.label }}</td>
+        </tr>
+        <tr>
+          <td>Birthday</td>
+          <td>{{form.bday(class='textbox')}}</td>
+          <td>{{form.bmonth(class='textbox')}}</td>
+          <td>{{form.byear(class='textbox')}}</td>
+        </tr>
+        <tr>
+          <td colspan="2">{{form.login.label }}</td>
+        {%if form.login.errors%}
+          <td colspan="2"><div class="f_error">{{form.login.errors[0]}}</div></td>
+        {%endif%}
+        </tr>
+        <tr>
+          <td colspan="4">{{form.login(class='textbox')}}</td>
+        </tr>
+        <tr>
+          <td colspan="2">{{form.password.label }}</td>
+        {%if form.password.errors%}
+          <td colspan="2"><div class="f_error">{{form.password.errors[0]}}</div></td>
+        {%endif%}
+        </tr>
+        <tr>
+          <td colspan="4">{{form.password(class='textbox')}}</td>
+        </tr>
+        <tr>
+          <td colspan="2">{{form.password2.label }}</td>
+        {%if form.password2.errors%}
+          <td colspan="2"><div class="f_error">{{form.password2.errors[0]}}</div></td>
+        {%endif%}
+        </tr>
+        <tr>
+          <td colspan="4">{{form.password2(class='textbox')}}</td>
+        </tr>
+        <tr><br></tr>
+        <tr><td colspan="4">{{form.submit(class='button')}}</td></tr>
       </table>
-      <br>
-      {{form.login.label }}
-      <br>
-       {{form.login(class='textbox')}}
-      <br>
-      {{form.password.label}}
-      <br>
-      {{form.password(class='textbox')}}
-      <br>
-      {{form.password2.label}}
-      <br>
-      {{form.password2(class='textbox')}}
-      {%if form.password2.errors%}
-      {{form.password2.errors[0]}}
-      {%endif%}
-      <br><br>
-      {{form.submit(class='button')}}
-      <br>
       {{ form.csrf_token }}
     </form>
 

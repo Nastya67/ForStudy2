@@ -1,0 +1,31 @@
+<html>
+  <head>
+    <meta charset="utf-8">
+    <link href="{{url_for('static', filename = 'stale.css')}}"  rel="stylesheet" media="all"/>
+    <title="New Book"/>
+  </head>
+  <body>
+    <h1 class="titles">New book</h1>
+    <form method="post" enctype="multipart/form-data">
+      {{form.name.label}}
+      {{form.name()}}
+      <br>
+      {{form.author.label}}
+      {{form.author()}}
+      <br>
+      {{form.size.label}}
+      {{form.size()}}
+      <br>
+      {{form.edition.label}}
+      {{form.edition()}}
+      <br>
+      {{form.date.label}}
+      {{form.date()}}
+      <br>
+      <input type="file" name='photo' accept="image/png, image/jpeg">
+      <br>
+      {{form.submit()}}
+      {{ form.csrf_token }}
+    </form>
+  </body>
+</html>
