@@ -64,22 +64,3 @@ function ask_del(){
 function remove_modalBox(){
   document.body.removeChild(document.body.lastChild)
 }
-
-function filter_books(){
-  var xhttp = new XMLHttpRequest();
-  xhttp.onreadystatechange = function(){
-    if(this.readyState == 4 && this.status == 200){
-      var data = this.responseText;
-      alert(data);
-      JSON.parse(data);
-      var template = document.getElementById("filter").innerHTML;
-      var renderHTML = Mustache.render(template, {listd:data});
-      document.getElementById('my-list').innerHTML = renderHTML;
-      //var del = document.getElementById('without_filter')
-      //document.body.removeChild(del)
-    }
-  };
-  var val = document.getElementById("searchBox");
-  xhttp.open('GET', '/list?field_find='+val.value+'&find=Find', true);
-  xhttp.send();
-}

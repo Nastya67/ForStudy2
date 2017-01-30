@@ -36,7 +36,7 @@ def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
 
-UPLOAD_FOLDER = r"D:\Nastya\Учеба\2курс\ОВП\ForStudy2\Lab2\Lab2_2\static"
+UPLOAD_FOLDER = r"D:\Nastya\Учеба\2курс\ОВП\ForStudy2\Lab3\Lab3_1\static"
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
@@ -52,7 +52,7 @@ def request_args_get():
     return {"name":name, "author":author, "date":date, "edition":edition, "size":size}
 
 def insert_book(form, photo):
-    with postgresql.open("pq://postgres:poqwiueryt@localhost/Lab2") as db:
+    with postgresql.open(os.environ['URL_DATABASE']) as db:
         ins = db.prepare("INSERT INTO books VALUES ($1, $2, $3, $4, $5, $6, $7);")
         id = id_generator(3, "qwertyuiopasdfghjklzxcvbnm")
         ins(id, form.name.data, form.author.data,
@@ -61,16 +61,16 @@ def insert_book(form, photo):
 
 def new_user(form):
     id = id_generator(4, "qwertyuiopasdfghjklzxcvbnm")
-    with postgresql.open("pq://postgres:poqwiueryt@localhost/Lab2") as db:
+    with postgresql.open(os.environ['URL_DATABASE']) as db:
         ins_users = db.prepare("INSERT INTO users VALUES ($1, $2, $3);")
         ins_users(id, form.login.data, form.password1.data)
-    with postgresql.open("pq://postgres:poqwiueryt@localhost/Lab2") as db:
+    with postgresql.open(os.environ['URL_DATABASE']) as db:
         ins = db.prepare("INSERT INTO user_info VALUES ($1, $2, $3, $4);")
         ins(id, form.name.data, form.surname.data, False)
     return id
 
 def get_user(login):
-    with postgresql.open("pq://postgres:poqwiueryt@localhost/Lab2") as db:
+    with postgresql.open(os.environ['URL_DATABASE']) as db:
         sel = db.prepare("SELECT user_id FROM users WHERE user_login=$1;")
         user_id = sel(login)
         if user_id:
@@ -85,7 +85,7 @@ def get_user(login):
     return None
 
 def chek_pass(login, password):
-    with postgresql.open("pq://postgres:poqwiueryt@localhost/Lab2") as db:
+    with postgresql.open(os.environ['URL_DATABASE']) as db:
         sel = db.prepare("SELECT user_password FROM users WHERE user_login=$1;")
         user_pass = sel(login)
         if user_pass:
@@ -94,7 +94,7 @@ def chek_pass(login, password):
         return False
 
 def get_user_list():
-    with postgresql.open("pq://postgres:poqwiueryt@localhost/Lab2") as db:
+    with postgresql.open(os.environ['URL_DATABASE']) as db:
         sel = db.prepare("SELECT user_name, user_surname FROM user_info;")
         return sel()
 
@@ -113,7 +113,7 @@ def reset_sesion():
         del session['name']
         del session['surname']
         del session['id']
-        
+        del session['admin']
 
 @app.route("/home")
 @app.route("/")
@@ -168,6 +168,7 @@ def one_book(index):
     if request.form.get("delete"):
         del_book_where(index)
         return redirect(url_for("List"))
+    return redirect(request.url)
 
 @app.route("/list", methods=['GET', 'POST'])
 def List():
@@ -189,8 +190,11 @@ def List():
         if not num:
             return redirect("/list?page=0")
         books = get_list_books(int(num), size)
-        return render_template('list.html', books = books['books'],
-        page={'cur':int(num), 'max':books['size']/size}, user = session)
+        if(books):
+            return render_template('list.html', books = books.get('books'),
+            page={'cur':int(num), 'max':books.get('size')/size}, user = session)
+        return render_template('list.html', books = 0,
+        page={'cur':int(num), 'max':0}, user = session)
 
 @app.route("/new_book", methods=['GET', "POST"])
 def new_book():
@@ -206,7 +210,7 @@ def new_book():
             return redirect(url_for("one_book", index = id))
         elif file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            #file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
             id = insert_book(form, filename)
             return redirect(url_for("one_book", index = id))
     return "Error"
@@ -244,7 +248,7 @@ def api_book(index):
         return "0"
 
 def get_book_filter(req, val):
-    with postgresql.open("pq://postgres:poqwiueryt@localhost/Lab2") as db:
+    with postgresql.open(os.environ['URL_DATABASE']) as db:
         sel = db.prepare(req)
         books = sel(val)
     if books:
@@ -252,29 +256,29 @@ def get_book_filter(req, val):
     return 0
 
 def del_book_where(id):
-    with postgresql.open("pq://postgres:poqwiueryt@localhost/Lab2") as db:
+    with postgresql.open(os.environ['URL_DATABASE']) as db:
         dell = db.prepare("DELETE FROM Books WHERE book_id=$1;")
         dell(id)
 
 def get_all_books():
-    with postgresql.open("pq://postgres:poqwiueryt@localhost/Lab2") as db:
+    with postgresql.open(os.environ['URL_DATABASE']) as db:
         sel = db.prepare("SELECT * FROM Books;")
         books = sel()
     if books:
         return books
-    return 0
+    return {}
 
 def get_list_books(num = 0, size = 4):
-    with postgresql.open("pq://postgres:poqwiueryt@localhost/Lab2") as db:
+    with postgresql.open(os.environ['URL_DATABASE']) as db:
         sel = db.prepare("SELECT book_id, book_name, book_photo FROM Books;")
         books = sel()
     if books:
         res = {'books':books[num*size:num*size+size], 'size':len(books)}
         return res
-    return 0
+    return {}
 
 def get_book_where(id):
-    with postgresql.open("pq://postgres:poqwiueryt@localhost/Lab2") as db:
+    with postgresql.open(os.environ['URL_DATABASE']) as db:
         sel = db.prepare("SELECT * FROM Books WHERE book_id = $1;")
         books = sel(id)
     if books:
@@ -282,4 +286,4 @@ def get_book_where(id):
     return 0
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=int(os.environ['PORT']), debug=True)

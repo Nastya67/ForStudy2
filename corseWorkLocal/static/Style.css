@@ -14,15 +14,7 @@ html, body {
   padding-top: 0;
   z-index: 0;
 }
-#mapf{
-  position: fixed;
-  height: 50%;
-  width: 50%;
-  left: 20%;
-  top: 20%;
-  padding-top: 0;
-  z-index: 100506;
-}
+
 .f_error{
   color: red;
   text-align: right;
@@ -91,10 +83,22 @@ h1{
   padding:10px;
   margin-bottom: auto;
 }
+.textarea{
+  resize: none;
+  height:110px;
+  width:100%;
+  border-radius:3px;
+  border:rgba(0,0,0,.3) 2px solid;
+  box-sizing:border-box;
+  font-family: 'Open Sans', sans-serif;
+  font-size:18px;
+  padding:10px;
+  margin-bottom: auto;
+}
 .searchbox{
   left 20%;
-  height:45px;
-  width:50%;
+  height:35px;
+  width:100%;
   border-radius:3px;
   border:rgba(0,0,0,.3) 2px solid;
   box-sizing:border-box;
@@ -110,22 +114,6 @@ h1{
    color:rgba(24,149,215,1);
 }
 
-.message{
-    background: rgba(255, 255, 255, 0.4);
-    width:100%;
-    height: 120px;
-    border:rgba(0,0,0,.3) 2px solid;
-    box-sizing:border-box;
-    -moz-border-radius: 3px;
-    font-size:18px;
-    font-family: 'Open Sans', sans-serif;
-    -webkit-border-radius: 3px;
-    border-radius: 3px;
-    display:block;
-    padding:10px;
-    margin-bottom:30px;
-    overflow:hidden;
-}
 /* Базовые стили кнопки */
 .button{
   height:45px;
@@ -142,7 +130,7 @@ h1{
   transition:background .4s;
   cursor:pointer;
 }
-.okey{
+.okey, .miniokey{
   height:45px;
   width: 100px;
   border-radius:3px;
@@ -153,9 +141,13 @@ h1{
   color:#FFF;
   font-family: 'Open Sans', sans-serif;
   font-weight:400;
-  font-size: 16pt;
+  font-size: 14pt;
   transition:background .4s;
   cursor:pointer;
+}
+.miniokey{
+  height:35px;
+  width: 70px;
 }
 /* Изменение фона кнопки при наведении */
 .button:hover, .okey:hover{
@@ -176,7 +168,7 @@ h1{
   top: 0%;
   left: 70%;
   height:45px;
-  margin: 0;
+  margin-top: 0.2%;
   border-radius:3px;
   border:rgba(0,0,0,.3) 0px solid;
   box-sizing:border-box;
@@ -189,8 +181,14 @@ h1{
   transition:background .4s;
   cursor:pointer;
 }
+.smallPic{
+  float: left;
+  width: 15pt;
+  height: 15pt;
+  margin:auto;
+}
 .crop {
-    width: 50%;
+    width: 100%;
     height:50%;
     overflow: hidden;
 }
@@ -198,7 +196,18 @@ h1{
   width: 80pt;
   height: 100pt;
   margin:auto;
-}/*
+}
+#serchPost{
+  z-index: 10056;
+  right: 0.5%;
+  margin: 0 auto;
+  text-align: right;
+  position: fixed;
+
+  top: 10%;
+  width: 30%;
+}
+/*
 ul{
   list-style-type: none;
 }

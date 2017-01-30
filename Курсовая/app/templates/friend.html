@@ -3,38 +3,48 @@
   <head>
     <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
     <meta charset="utf-8">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>list followers</title>
     <link href="{{url_for('static', filename = 'Style.css')}}" rel="stylesheet" media="all"/>
-    <script src="{{url_for('static', filename = 'Client.js')}}"></script>
     <script src="https://code.jquery.com/jquery-1.10.2.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script src="{{url_for('static', filename = 'Client.js')}}"></script>
   </head>
   <body>
     <br><br><br>
     <img class="top_picture" src="{{url_for('static', filename='top2.jpg')}}">
-    <br><br><br>
-    <form method="post" onsubmit="filter()" id="formx">
-      {{form.nameFollower(class='searchbox')}}
-      {{form.submit(class='okey')}}
-      <br>
-      {{ form.csrf_token }}
-    </form>
+    <!--<br><br><br>
+    <h4>Find {{title}}</h4>
+    <p><input type='text' id='name' class="searchbox">
+      <button id="find" class="okey">find</button></p>-->
+
     <div class="for_list">
     <ul  id="results">
     {%for i in range(0, friends|length)%}
     <a  class="name_link" href="{{url_for('index', id = friends[i][0][0])}}">
       <li>
-        <span class="crop">
+        {%if can%}
+        <form  align="right" method="post" action={{"{0}?id={1}".format(request.url,friends[i][0][0])}}>
+          <button><img  class="smallPic" src="{{url_for('static', filename = 'clear.jpg')}}"></button>
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+        </form>
+        {%endif%}
+        <table>
+          <tr>
+        <td><div class="crop">
         {%if friends[i][0][3]%}
           <img  style="vertical-align: middle;" src = "{{url_for('static', filename = friends[i][0][3])}}">
         {%else%}
           <img  style="vertical-align: middle;" src="{{url_for('static', filename = 'default-avatar.jpg')}}">
         {%endif%}
-      </span>
-        <h2>{{friends[i][0][1]}}
-      {{friends[i][0][2]}}</h2>
+      </div></td>
+        <td><h2>{{friends[i][0][1]}}
+      {{friends[i][0][2]}}</h2></td></tr></table>
     </li></a>
     {%endfor%}
   </ul>
 </div>
+
   </body>
 </html>

@@ -22,12 +22,12 @@ class Vhod(FlaskForm):
     submit = wtforms.SubmitField('OK')
 
 class Reg(FlaskForm):
-    name = wtforms.StringField("Name", validators=[Required()])
-    surname = wtforms.StringField("Surname", validators=[Required()])
-    login = wtforms.StringField("Login", validators=[Required()])
-    password = wtforms.PasswordField("Your password", validators=[Required()])
+    name = wtforms.StringField("Name", validators=[Required(message="Enter your name")])
+    surname = wtforms.StringField("Surname", validators=[Required("Enter your surname")])
+    login = wtforms.StringField("Login", validators=[Required("Enter your login")])
+    password = wtforms.PasswordField("Your password", validators=[Required("Enter your password")])
     password2 = wtforms.PasswordField("Repeat your password", validators=[Required(),
-    EqualTo('password', message='wrong password')])
+    EqualTo('password', message='Wrong password')])
     bday = wtforms.SelectField('Day', choices=[(str(i), i) for i in range(1, 32)])
     bmonth = wtforms.SelectField('Month', choices=[(str(i), i) for i in range(1,13)])
     byear = wtforms.SelectField('Year', choices=[(str(i), i) for i in range(1916, 2016)])
@@ -68,6 +68,29 @@ def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
 
+def row_to_dict_posts(posts):
+    res = []
+    for post in posts:
+        post_dict = {}
+        post_dict['idpost'] = post['idpost']
+        post_dict['longitude'] = post['longitude']
+        post_dict['latitude'] = post['latitude']
+        post_dict['text'] = post['posttext']
+        post_dict['title'] = post['posttitle']
+        res.append(post_dict)
+    return res
+
+def init_session(id):
+    user_inf = get_user_info(id)
+    session['id'] = user_inf['iduser']
+    session['name'] = user_inf['name']
+    session['surname'] = user_inf['surname']
+    session['userphoto'] = user_inf['userphoto']
+    session['birthday'] = '%s-%s-%s' %(str(user_inf['bday']),
+    str(user_inf['bmonth']), str(user_inf['byear']))
+    session['posts'] = row_to_dict_posts(select_posts(session['id']))
+    session['roles'] = user_inf['roles']
+
 @app.route("/api/<id>", methods=['GET', 'POST'])
 def api_index(id):
     if request.method == 'GET':
@@ -96,6 +119,8 @@ def index(id):
     form["Log_out"] = Log_out()
     if request.method == 'GET':
         if(id == session.get('id')):
+            posts = select_posts(id)
+            session['posts'] = json.dumps(row_to_dict_posts(posts))
             return render_template('userStr.html', user_data = session, form = form,
             authorization = session.get('id'), sub = True, key = os.environ.get('kay_map'))
 
@@ -108,7 +133,7 @@ def index(id):
                 user_dict['surname'] = user['surname']
                 user_dict['roles'] = user['roles']
                 user_dict['userphoto'] = user['userphoto']
-                user_dict['posts'] = json.dumps(select_posts(id))
+                user_dict['posts'] = json.dumps(row_to_dict_posts(select_posts(id)))
                 if session.get('roles') == 2:
                     return render_template('userStr.html', user_data = user_dict, form = form,
                     authorization = session.get('id'), sub = chek_subscribe(session.get('id'), id))
@@ -147,10 +172,12 @@ def index(id):
                 return redirect(request.url)
 
         else:
-            latlng = request.data.decode('utf-8')
-            ll3 = latlng[1:-1].partition(", ")
-            new_post(session['id'], float(ll3[0]), float(ll3[2]))
-            return flask.make_response("Ok")
+            data = json.loads(request.data.decode('utf-8'))
+            if data.get('action') == 'delete':
+                del_post(data.get("id"))
+                return flask.make_response("Ok")
+            id = new_post(session['id'], data)
+            return flask.make_response(id)
 
     else:
         return "you can't to do this"
@@ -158,10 +185,14 @@ def index(id):
 @app.route("/<id>/subscription", methods=["GET", "POST"])
 def subscription(id):
     form = Search()
+    del_id = 0
     del_id = request.args.get("id")
     if request.method == 'GET':
         user_list = get_list_subscription(id)
-        return render_template("friend.html", friends = user_list, form = form)
+        if session.get("id") == id:
+            return render_template("friend.html", title="subscription",  friends = user_list, can = True)
+        else:
+            return render_template("friend.html", title="subscription",  friends = user_list, can = False)
     elif request.method == "POST" and session.get("id")==id and del_id:
         del_follower(session["id"], id)
         return redirect(request.url)
@@ -170,8 +201,9 @@ def subscription(id):
         user_list = get_list_subscription(id)
         for user in user_list:
             res.append(user[0])
-        print(request.data.decode('utf-8'))
         return json.dumps(res)
+    else:
+        return redirect(request.url)
 
 @app.route("/<id>/followers", methods=["GET", "POST"])
 def followers(id):
@@ -191,25 +223,36 @@ def followers(id):
         print(request.data.decode('utf-8'))
         return json.dumps(res)
 
+@app.route("/api/<id>/subscription", methods=["GET", "POST"])
+def subscription_api(id):
+    form = Search()
+    del_id = request.args.get("id")
+    if request.method == 'GET':
+        user_list = get_list_subscription(id)
+        return json.dumps(user_list)
+    elif request.method == 'POST':
+        id2 = request.get.args("id")
+        new_subscribe(session['id'], id)
+        return "{status: OK}"
+
+@app.route("/api/<id>/followers", methods=["GET"])
+def followers_api(id):
+    form = Search()
+    if request.method == 'GET':
+        user_list = get_list_follower(id)
+        return json.dumps(user_list)
+
+
 @app.route("/", methods=['GET', 'POST'])
 def vhod():
     form = Vhod()
-
     if form.validate_on_submit():
         user = select_where_log(form.login.data)
         if(hashlib.md5(form.password.data.encode('utf8')).hexdigest() == user['password']):
-            user_inf = get_user_info(user['iduser'])
-            session['id'] = user_inf['iduser']
-            session['name'] = user_inf['name']
-            session['surname'] = user_inf['surname']
-            session['userphoto'] = user_inf['userphoto']
-            session['birthday'] = '%s-%s-%s' %(str(user_inf['bday']),
-            str(user_inf['bmonth']), str(user_inf['byear']))
-            session['posts'] = json.dumps(select_posts(session['id']))
-            session['roles'] = user_inf['roles']
+            init_session(user['iduser'])
         else:
             return redirect(url_for("vhod"))
-        return redirect(url_for('index', id = user_inf['iduser']))
+        return redirect(url_for('index', id = user['iduser']))
     return render_template('vhod.html', form = form)
 
 @app.route("/reg", methods=['GET', 'POST'])
@@ -219,17 +262,7 @@ def reg():
         id = id_generator(6, alfas)
         save_log(id, form.login.data, form.password.data)
         save_info(id, form)
-        user_inf = get_user_info(id)
-        session['id'] = user_inf['iduser']
-        session['name'] = user_inf['name']
-        session['surname'] = user_inf['surname']
-        session['userphoto'] = user_inf['userphoto']
-        session['birthday'] = '%s-%s-%s' %(str(user_inf['bday']),
-        str(user_inf['bmonth']), str(user_inf['byear']))
-        session['posts'] = json.dumps(select_posts(session['id']))
-        session['roles'] = user_inf['roles']
-
-
+        init_session(id)
         return redirect(url_for('index', id = id))
     return render_template("reg.html", form = form)
 
@@ -241,17 +274,24 @@ def chek_subscribe(id1, id2):
             return 1
         return 0
 
+def del_post(id):
+    with postgresql.open(os.environ['URL_DATABASE']) as db:
+        ins = db.prepare("DELETE FROM posts WHERE idpost=$1")
+        ins(id)
+
 def del_follower(id1, id2):
     with postgresql.open(os.environ['URL_DATABASE']) as db:
         ins = db.prepare("DELETE FROM friendlist WHERE id1=$1 and id=$2")
         ins(id1, id2)
 
-def new_post(id, lat, lng):
-    with postgresql.open(os.environ['URL_DATABASE']) as db:
-        ins = db.prepare("INSERT INTO posts (idpost, iduser, longitude, latitude, chocolate) "
-        "VALUES ($1, $2, $3, $4, $5);")
+def new_post(id, data):
+    with postgresql.open("pq://postgres:poqwiueryt@localhost/CorseWork") as db:
+        ins = db.prepare("INSERT INTO posts "
+        "VALUES ($1, $2, $3, $4, $5, $6, $7);")
         postid = id_generator(3, alfas)
-        ins(postid, id, lng, lat, 0)
+        ins(postid, id, data['text'], data['location']['lng'],
+        data['location']['lat'], 0, data['title'])
+    return postid
 
 def new_subscribe(id1, id2):
     if not chek_subscribe(id1, id2):

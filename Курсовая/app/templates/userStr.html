@@ -18,15 +18,16 @@
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/></p>
     </form>
     {%else%}
-    <p class = 'primary_link'><a href="{{url_for('vhod')}}">Log in</a></p>
+    <p class = 'primary_link'><a href="{{url_for('vhod')}}">
+      <input type="button" class="logout" value="Log in"></a></p>
     {%endif%}
     <div class='left_colomn'>
       {%if user_data.get('surname')%}
       <table>
         <tr>
           {%if user_data.get('userphoto')%}
-          <img class="avatar" src="data:image/jpg;base64, {{user_data.get('userphoto')}}">
-            <!--<img class='avatar' src = "{{url_for('static', filename = user_data.get('userphoto'))}}">-->
+          <!--<img class="avatar" src="data:image/jpg;base64, {{user_data.get('userphoto')}}">-->
+            <img class='avatar' src = {{"data:image/jpg;base64,{0}".format(user_data['userphoto'])}}>
           {%else%}
             <img class='avatar' src="{{url_for('static', filename = 'default-avatar.jpg')}}">
           {%endif%}
@@ -73,10 +74,22 @@
     {%endif%}
     </div>
     <div id="map"></div>
-
-    <script async defer
-      src={{"https://maps.googleapis.com/maps/api/js?key={0}&signed_in=true&callback=initMap".format(key)}}>
-    </script>
-
+    {%if authorization%}
+        <script async defer
+          src={{"https://maps.googleapis.com/maps/api/js?key={0}&callback=initMap".format(key)}}>
+        </script>
+        {%else%}
+        <script async defer
+          src={{"https://maps.googleapis.com/maps/api/js?key={0}&callback=initMapg".format(key)}}>
+        </script>
+      {%endif%}
+      <div id='serchPost'>
+        <form >
+          <table>
+          <td><input class='searchbox' id="findstr"></td>
+          <td><input type="button" class="miniokey" value="Find" onclick='find_post()'></td>
+        </table>
+        </form>
+      </div>
   </body>
 </html>

@@ -5,7 +5,7 @@ html, body {
   font-family: Calibri;
   font-size: 20px;
 }
-#map {
+#map{
   position: fixed;
   height: 92%;
   width: 80%;
@@ -13,7 +13,11 @@ html, body {
   top: 5%;
   padding-top: 0;
   z-index: 0;
+}
 
+.f_error{
+  color: red;
+  text-align: right;
 }
 .avatar{
   float: left;
@@ -27,12 +31,23 @@ html, body {
   top: 8%;
   bottom: 0;
 }
+.modal_box {
+  margin: 0 auto;
+  text-align: center;
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 100505;
+  background: rgba(205, 214, 219, 0.5);
+}
 .forma{
   vertical-align: middle;
-  margin-top: 20%;
+  margin-top: 10%;
   margin:0 auto;
   max-width:50%;
-
+  text-align: inherit;
   box-sizing:border-box;
   padding:40px;
   border-radius:5px;
@@ -68,10 +83,22 @@ h1{
   padding:10px;
   margin-bottom: auto;
 }
+.textarea{
+  resize: none;
+  height:110px;
+  width:100%;
+  border-radius:3px;
+  border:rgba(0,0,0,.3) 2px solid;
+  box-sizing:border-box;
+  font-family: 'Open Sans', sans-serif;
+  font-size:18px;
+  padding:10px;
+  margin-bottom: auto;
+}
 .searchbox{
   left 20%;
-  height:45px;
-  width:50%;
+  height:35px;
+  width:100%;
   border-radius:3px;
   border:rgba(0,0,0,.3) 2px solid;
   box-sizing:border-box;
@@ -86,34 +113,7 @@ h1{
    border:rgba(24,149,215,1) 2px solid;
    color:rgba(24,149,215,1);
 }
-/*.textbox_date{
-  height:45px;
-  width:100%;
-  border-radius:3px;
-  border:rgba(0,0,0,.3) 2px solid;
-  box-sizing:border-box;
-  font-family: 'Open Sans', sans-serif;
-  font-size:18px;
-  padding:10px;
-  margin-bottom: auto;
-}*/
-/* Стили текстового поля */
-.message{
-    background: rgba(255, 255, 255, 0.4);
-    width:100%;
-    height: 120px;
-    border:rgba(0,0,0,.3) 2px solid;
-    box-sizing:border-box;
-    -moz-border-radius: 3px;
-    font-size:18px;
-    font-family: 'Open Sans', sans-serif;
-    -webkit-border-radius: 3px;
-    border-radius: 3px;
-    display:block;
-    padding:10px;
-    margin-bottom:30px;
-    overflow:hidden;
-}
+
 /* Базовые стили кнопки */
 .button{
   height:45px;
@@ -130,8 +130,9 @@ h1{
   transition:background .4s;
   cursor:pointer;
 }
-.okey{
+.okey, .miniokey{
   height:45px;
+  width: 100px;
   border-radius:3px;
   border:rgba(0,0,0,.3) 0px solid;
   box-sizing:border-box;
@@ -140,17 +141,19 @@ h1{
   color:#FFF;
   font-family: 'Open Sans', sans-serif;
   font-weight:400;
-  font-size: 16pt;
+  font-size: 14pt;
   transition:background .4s;
   cursor:pointer;
+}
+.miniokey{
+  height:35px;
+  width: 70px;
 }
 /* Изменение фона кнопки при наведении */
 .button:hover, .okey:hover{
   background:#80b438;
 }
-td{
-    width: 24%; /* Ширина ячейки */
-}
+
 .primary_link{
   z-index: 100501;
   font-size: 18pt;
@@ -159,13 +162,13 @@ td{
   left: 70%;
 }
 .logout{
-  z-index: 100501;
+  z-index: 1005;
   font-size: 18pt;
   position: fixed;
   top: 0%;
   left: 70%;
   height:45px;
-  margin: 0;
+  margin-top: 0.2%;
   border-radius:3px;
   border:rgba(0,0,0,.3) 0px solid;
   box-sizing:border-box;
@@ -178,8 +181,14 @@ td{
   transition:background .4s;
   cursor:pointer;
 }
+.smallPic{
+  float: left;
+  width: 15pt;
+  height: 15pt;
+  margin:auto;
+}
 .crop {
-    width: 50%;
+    width: 100%;
     height:50%;
     overflow: hidden;
 }
@@ -187,7 +196,18 @@ td{
   width: 80pt;
   height: 100pt;
   margin:auto;
-}/*
+}
+#serchPost{
+  z-index: 10056;
+  right: 0.5%;
+  margin: 0 auto;
+  text-align: right;
+  position: fixed;
+
+  top: 10%;
+  width: 30%;
+}
+/*
 ul{
   list-style-type: none;
 }
@@ -209,6 +229,7 @@ ul{
 ul {
   list-style-type: none;
   width: 500px;
+
 }
 
 li {

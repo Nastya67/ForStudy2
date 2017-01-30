@@ -74,12 +74,14 @@ def row_to_dict_posts(posts):
     res = []
     for post in posts:
         post_dict = {}
+        if post['postphoto']:
+            post_dict['photo'] = base64.decodestring(post['postphoto'])
         post_dict['idpost'] = post['idpost']
         post_dict['longitude'] = post['longitude']
         post_dict['latitude'] = post['latitude']
         post_dict['text'] = post['posttext']
+        post_dict['title'] = post['posttitle']
         res.append(post_dict)
-    print(res)
     return res
 
 def init_session(id):
@@ -131,10 +133,11 @@ def index(id):
     form["Log_out"] = Log_out()
     if request.method == 'GET':
         if(id == session.get('id')):
-            session['posts'] = json.dumps(select_posts(id))
+            posts = select_posts(id)
+            session['posts'] = json.dumps(row_to_dict_posts(posts))
             return render_template('userStr.html', user_data = session, form = form,
             authorization = session.get('id'), sub = True, key = Config.key_google)
-        else: 
+        else:
             user = get_user_info(id)
             user_dict = {}
             if(user):
@@ -143,7 +146,7 @@ def index(id):
                 user_dict['surname'] = user['surname']
                 user_dict['roles'] = user['roles']
                 user_dict['userphoto'] = user['userphoto']
-                user_dict['posts'] = json.dumps(select_posts(id))
+                user_dict['posts'] = json.dumps(row_to_dict_posts(select_posts(id)))
                 if session.get('roles') == 2:
                     return render_template('userStr.html', user_data = user_dict, form = form,
                     authorization = session.get('id'), sub = chek_subscribe(session.get('id'), id),
@@ -151,7 +154,7 @@ def index(id):
                 return render_template('userStr.html', user_data = user_dict, authorization = session.get('id'),
                 sub = chek_subscribe(session.get('id'), id), key = Config.key_google)
             else:
-                return "User does not exist"
+                return "<h1>User does not exist</h1>"
     elif request.method == 'POST' and request.form.get('Logout') and session.get("id"):
         del session['name']
         del session['surname']
@@ -174,7 +177,7 @@ def index(id):
                 return redirect(request.url)
             elif file and allowed_file(file.filename):
                 filename = secure_filename(file.filename)
-                file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                file.save(os.path.join(app.config['UPLOAD_FOLDER'], id+".jpg"))
                 update_photo(id, filename)
                 session['userphoto'] = filename
                 return redirect(request.url)
@@ -182,11 +185,12 @@ def index(id):
                 print('Invalid format')
                 return redirect(request.url)
         else:
-            print(request.data.decode('utf-8'))
             data = json.loads(request.data.decode('utf-8'))
-            latlng = data['location']
-            new_post(session['id'], latlng['lat'], latlng['lng'], data['text'])
-            return flask.make_response("Ok")
+            if data.get('action') == 'delete':
+                del_post(data.get("id"))
+                return flask.make_response("Ok")
+            id = new_post(session['id'], data)
+            return flask.make_response(id)
 
     else:
         return "you can't to do this"
@@ -210,8 +214,7 @@ def subscription(id):
         user_list = get_list_subscription(id)
         for user in user_list:
             res.append(user[0])
-        print(request.data.decode('utf-8'))
-        print(request.json)
+
         return json.dumps(res)
     else:
         return redirect(request.url)
@@ -263,7 +266,6 @@ def followers(id):
 @app.route("/", methods=['GET', 'POST'])
 def vhod():
     form = Vhod()
-
     if form.validate_on_submit():
         user = select_where_log(form.login.data)
         if(hashlib.md5(form.password.data.encode('utf8')).hexdigest() == user['password']):
@@ -283,7 +285,7 @@ def reg():
         init_session(id)
         return redirect(url_for('index', id = id))
     return render_template("reg.html", form = form)
-    return redirect(url_for('vhod'))
+
 
 def chek_subscribe(id1, id2):
     with postgresql.open("pq://postgres:poqwiueryt@localhost/CorseWork") as db:
@@ -293,12 +295,19 @@ def chek_subscribe(id1, id2):
             return 1
         return 0
 
-def new_post(id, lat, lng, text):
+def new_post(id, data):
     with postgresql.open("pq://postgres:poqwiueryt@localhost/CorseWork") as db:
-        ins = db.prepare("INSERT INTO posts (idpost, iduser, posttext, longitude, latitude, chocolate) "
-        "VALUES ($1, $2, $3, $4, $5, $6);")
+        ins = db.prepare("INSERT INTO posts "
+        "VALUES ($1, $2, $3, $4, $5, $6, $7, $8);")
         postid = id_generator(3, alfas)
-        ins(postid, id, text, lng, lat, 0)
+        ins(postid, id, data['text'], data['location']['lng'],
+        data['location']['lat'], 0, data['title'], b"")
+    return postid
+
+def del_post(id):
+    with postgresql.open("pq://postgres:poqwiueryt@localhost/CorseWork") as db:
+        ins = db.prepare("DELETE FROM posts WHERE idpost=$1")
+        ins(id)
 
 def del_follower(id1, id2):
     with postgresql.open("pq://postgres:poqwiueryt@localhost/CorseWork") as db:
@@ -374,9 +383,6 @@ def save_info(id, form):
         "bmonth, byear, roles) VALUES ($1, $2, $3, $4, $5, $6, $7)")
         ins(id, form.name.data, form.surname.data, int(form.bday.data), int(form.bmonth.data),
         int(form.byear.data), 1)
-
-
-
 
 if __name__ == "__main__":
     app.run(debug=True)

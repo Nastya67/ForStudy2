@@ -14,10 +14,10 @@
   <body>
     <br><br><br>
     <img class="top_picture" src="{{url_for('static', filename='top2.jpg')}}">
-    <br><br><br>
+    <!--<br><br><br>
     <h4>Find {{title}}</h4>
     <p><input type='text' id='name' class="searchbox">
-      <button id="find" class="okey">find</button></p>
+      <button id="find" class="okey">find</button></p>-->
 
     <div class="for_list">
     <ul  id="results">
@@ -25,20 +25,22 @@
     <a  class="name_link" href="{{url_for('index', id = friends[i][0][0])}}">
       <li>
         {%if can%}
-        <form method="post" action={{"{0}?id={1}".format(request.url,friends[i][0][0])}}>
-          <button><img  src="{{url_for('static', filename = 'clear.jpg')}}"></button>
+        <form  align="right" method="post" action={{"{0}?id={1}".format(request.url,friends[i][0][0])}}>
+          <button><img  class="smallPic" src="{{url_for('static', filename = 'clear.jpg')}}"></button>
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
         </form>
         {%endif%}
-        <span class="crop">
+        <table>
+          <tr>
+        <td><div class="crop">
         {%if friends[i][0][3]%}
           <img  style="vertical-align: middle;" src = "{{url_for('static', filename = friends[i][0][3])}}">
         {%else%}
           <img  style="vertical-align: middle;" src="{{url_for('static', filename = 'default-avatar.jpg')}}">
         {%endif%}
-      </span>
-        <h2>{{friends[i][0][1]}}
-      {{friends[i][0][2]}}</h2>
+      </div></td>
+        <td><h2>{{friends[i][0][1]}}
+      {{friends[i][0][2]}}</h2></td></tr></table>
     </li></a>
     {%endfor%}
   </ul>
