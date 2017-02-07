@@ -1,0 +1,32 @@
+<html>
+  <head>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta charset="utf-8">
+    <link href="{{url_for('static', filename = 'Styles.css')}}"  rel="stylesheet" media="all"/>
+    <title="Sign up"/>
+
+  </head>
+  <body>
+    <h1 class="titles">Sign up</h1>
+    <form class="login" method="post">
+      {{form.name.label}}
+      {{form.name()}}
+      <br>
+      {{form.surname.label}}
+      {{form.surname()}}
+      <br>
+      {{form.login.label}}
+      {{form.login()}}
+      <br>
+      {{form.password1.label}}
+      {{form.password1()}}
+      <br>
+      {{form.password2.label}}
+      {{form.password2()}}
+      <br>
+      {{form.submit()}}
+      {{ form.csrf_token }}
+    </form>
+    <a href="{{url_for('log_in')}}">Log in</a>
+  </body>
+</html>

@@ -47,6 +47,10 @@ input[type=button]:hover{
 .error-message{
   color: red;
 }
+.error{
+  color: red;
+  border-color: red;
+}
 
 .text_right{
   text-align: right;

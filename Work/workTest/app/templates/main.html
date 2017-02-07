@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta charset="utf-8">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>User profile</title>
+    <link href="{{url_for('static', filename = 'Styles.css')}}" rel="stylesheet" media="all"/>
+    <script src="{{url_for('static', filename = 'Client.js')}}"></script>
+
+  </head>
+  <body>
+    <h1>{{user['surname']}} {{user['name']}}</h1>
+    <label>My interests:</label>
+    <br>
+    <div id="interests">
+      {%for interest in interests%}
+        <div class='stack-horz'>{{interest}}
+          <button class="del" onclick='delInterest(this)'>X</button>
+        </div>
+      {%endfor%}
+
+    </div>
+    <br>
+    <label>Add new one</label>
+    <input autocomplete="on"
+            type="text"
+            list="interestsList"
+            onkeypress="interestChange(this.value)"
+            id="interestInput">
+    <button class="submit" onclick="interestSubmit()">+</button>
+    <datalist id="interestsList"></datalist>
+
+  </body>
+</html>
