@@ -16,7 +16,8 @@ function initMapg(){
   googleMAP = map;
 }
 var markers={};
-var googleMAP;
+var googleMAP
+
 function initMap() {
   var bangalore = { lat: 49.97, lng: 32.59 };
   var map = new google.maps.Map(document.getElementById('map'), {
